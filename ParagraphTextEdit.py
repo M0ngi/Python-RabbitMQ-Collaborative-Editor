@@ -5,7 +5,7 @@ from RMQConnection import RabbitMQConnection
 
 
 class ParagraphTextEdit(QtWidgets.QTextEdit):
-    OFFSET = 140
+    OFFSET = 90
     updateValue = QtCore.pyqtSignal(str)
 
     def __init__(self, panelContext: QtWidgets.QWidget, connection: RabbitMQConnection, index: int):
@@ -19,7 +19,7 @@ class ParagraphTextEdit(QtWidgets.QTextEdit):
 
         print("ID: "+self.connection.clientId)
         
-        self.setGeometry(QtCore.QRect(170, 20 + index*ParagraphTextEdit.OFFSET, 431, 121)) # 
+        self.setGeometry(QtCore.QRect(170, 20 + index*ParagraphTextEdit.OFFSET, 431, 70)) # 
         self.setObjectName(self.identifier)
         self.updateValue.connect(self.setText)
         

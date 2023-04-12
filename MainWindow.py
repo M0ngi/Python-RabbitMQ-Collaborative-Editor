@@ -77,13 +77,22 @@ class Ui_MainWindow(object):
         self.lab1.setObjectName("lab1")
         
         self.lab2 = QtWidgets.QLabel(self.PanelContent)
-        self.lab2.setGeometry(QtCore.QRect(40, 160, 111, 31))
+        self.lab2.setGeometry(QtCore.QRect(40, 110, 111, 31))
         font = QtGui.QFont()
         font.setPointSize(15)
         self.lab2.setFont(font)
         self.lab2.setObjectName("lab2")
         
         self.inputBox2 = ParagraphTextEdit(self.PanelContent, self.connection, 1)
+
+        self.lab3 = QtWidgets.QLabel(self.PanelContent)
+        self.lab3.setGeometry(QtCore.QRect(40, 200, 111, 31))
+        font = QtGui.QFont()
+        font.setPointSize(15)
+        self.lab3.setFont(font)
+        self.lab3.setObjectName("lab3")
+        
+        self.inputBox3 = ParagraphTextEdit(self.PanelContent, self.connection, 2)
         # setupParagraphBoxes
     
     def setupPanel(self):
@@ -113,5 +122,6 @@ class Ui_MainWindow(object):
         self.totalLab.setText(_translate("MainWindow", "Total"))
         self.lab1.setText(_translate("MainWindow", "Paragraph 1"))
         self.lab2.setText(_translate("MainWindow", "Paragraph 2"))
+        self.lab3.setText(_translate("MainWindow", "Paragraph 3"))
         # retranslateUi
 
