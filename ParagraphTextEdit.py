@@ -1,6 +1,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 import pika, json
-import threading
+import threading, time
 from RMQConnection import RabbitMQConnection
 
 
@@ -16,23 +16,20 @@ class ParagraphTextEdit(QtWidgets.QTextEdit):
         self.exchange = f"exchange.{self.identifier}"
         self.updateQueue = f"{self.connection.clientId}.{self.identifier}"
         self.lastUpdatedValue = ""
+
+        print("ID: "+self.connection.clientId)
         
         self.setGeometry(QtCore.QRect(170, 20 + index*ParagraphTextEdit.OFFSET, 431, 121)) # 
         self.setObjectName(self.identifier)
         self.updateValue.connect(self.setText)
         
         # Used for locks
-        self.connection.publisher.declareQueue(self.identifier, arguments={'x-max-length': 1})
-        # self.connection.consumer.listenQueue(self.identifier, self.lockManager)
+        self.connection.publisher.declareQueue(self.identifier, arguments={'x-max-length': 1, "x-overflow":"reject-publish"})
 
         # Used for message updates
         self.connection.publisher.declareAndBindQueueExchange(self.updateQueue, self.exchange)
         self.connection.consumer.listenQueue(self.updateQueue, self.onMessageUpdate)
         # __init__
-
-    def lockManager(self, ch, method, properties, body):
-        # WIP
-        print(body)
 
     def onMessageUpdate(self, ch, method, properties, body):
         delivery_tag = method.delivery_tag
@@ -50,7 +47,33 @@ class ParagraphTextEdit(QtWidgets.QTextEdit):
         payload = {
             "user": self.connection.clientId
         }
-        self.connection.publisher.sendMessage(queue=self.identifier, message=json.dumps(payload))
+        try:
+            self.connection.publisher.sendMessage(queue=self.identifier, message=json.dumps(payload))
+        except Exception as e:
+            pass
+        
+        body = None
+        try:
+            method, properties, body = self.connection.publisher.readQueue(self.identifier, auto_ack=False)
+            self.connection.publisher.sendNack(method.delivery_tag)
+            print(body)
+        except Exception as e:
+            print("Error" + "-"*50)
+            print(e)
+            pass
+
+        if body is None:
+            return
+        
+        body = json.loads(body)
+        print(body)
+        if "user" not in body:
+            self.clearFocus()
+            return
+        
+        if body["user"] != self.connection.clientId:
+            self.clearFocus()
+            return
         # requestEditLock
     
     def focusInEvent(self, e):
@@ -65,6 +88,14 @@ class ParagraphTextEdit(QtWidgets.QTextEdit):
         if self.lastUpdatedValue == self.toPlainText():
             return
         print("focus out "+str(self.index))
+        
+        try:
+            method, properties, body = self.connection.publisher.readQueue(self.identifier, auto_ack=False)
+            self.connection.publisher.sendAck(method.delivery_tag)
+        except Exception as e:
+            print("Error" + "-"*50)
+            print(e)
+            pass
         
         payload = {
             "message": self.toPlainText(),

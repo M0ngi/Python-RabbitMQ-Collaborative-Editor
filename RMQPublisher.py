@@ -31,3 +31,11 @@ class RabbitMQPublisher:
                       routing_key=queue,
                       body=message)
     
+    def readQueue(self, queue, **args):
+        return self.channel.basic_get(queue, **args)
+
+    def sendNack(self, tag):
+        self.channel.basic_nack(tag)
+    
+    def sendAck(self, tag):
+        self.channel.basic_ack(tag)

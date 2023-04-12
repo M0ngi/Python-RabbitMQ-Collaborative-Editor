@@ -39,3 +39,5 @@ class RabbitMQConsumer(threading.Thread):
     def listenQueue(self, queue, onmessage, **args):
         return self.channel.basic_consume(queue=queue, on_message_callback=onmessage, **args)
 
+    def cancelListener(self, tag):
+        self.channel.basic_cancel(tag)
